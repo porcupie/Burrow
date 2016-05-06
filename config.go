@@ -25,16 +25,16 @@ import (
 
 // Configuration definition
 type ClientProfile struct {
-	ClientID       string   `gcfg:"client-id"`
-	TLS            bool     `gcfg:"tls"`
-	TLSNoVerify    bool     `gcfg:"tls-noverify"`
+	ClientID    string `gcfg:"client-id"`
+	TLS         bool   `gcfg:"tls"`
+	TLSNoVerify bool   `gcfg:"tls-noverify"`
 }
 type BurrowConfig struct {
 	General struct {
 		LogDir         string `gcfg:"logdir"`
 		LogConfig      string `gcfg:"logconfig"`
 		PIDFile        string `gcfg:"pidfile"`
-		ClientID      string   `gcfg:"client-id"`
+		ClientID       string `gcfg:"client-id"`
 		GroupBlacklist string `gcfg:"group-blacklist"`
 	}
 	Zookeeper struct {
@@ -104,6 +104,9 @@ type BurrowConfig struct {
 
 func ReadConfig(cfgFile string) *BurrowConfig {
 	var cfg BurrowConfig
+
+	// make this slice - was getting panics in line 183 below
+	cfg.Clientprofile = make(map[string]*ClientProfile)
 
 	// Set some non-standard defaults
 	cfg.Httpnotifier.SendDelete = true
@@ -177,7 +180,7 @@ func ValidateConfig(app *ApplicationContext) error {
 	// Kafka Client Profiles
 	// Set up a default profile, if needed
 	if _, ok := app.Config.Clientprofile["default"]; !ok {
-		app.Config.Clientprofile["default"] = &ClientProfile {
+		app.Config.Clientprofile["default"] = &ClientProfile{
 			ClientID: app.Config.General.ClientID,
 			TLS:      false,
 		}
